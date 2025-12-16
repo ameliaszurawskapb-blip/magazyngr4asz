@@ -1,8 +1,20 @@
 import streamlit as st
 
+# Funkcja wykonująca dodawanie produktu i resetująca pole wejściowe
+def dodaj_produkt():
+    """Pobiera produkt z pola wejściowego, dodaje do magazynu i czyści pole."""
+    nowy_produkt = st.session_state.input_dodaj
+    if nowy_produkt:
+        # Dodanie produktu do listy w st.session_state
+        st.session_state.magazyn.append(nowy_produkt.strip())
+        st.success(f"Produkt **{nowy_produkt.strip()}** został dodany.")
+        # Zerowanie pola tekstowego - to jest poprawny sposób
+        st.session_state.input_dodaj = "" 
+    else:
+        st.warning("Proszę podać nazwę produktu.")
+
 def main():
     # Inicjalizacja magazynu w 'session_state' Streamlit, jeśli jeszcze nie istnieje
-    # Używamy st.session_state do przechowywania stanu magazynu, co jest konieczne w aplikacjach Streamlit
     if 'magazyn' not in st.session_state:
         st.session_state.magazyn = []
 
@@ -12,20 +24,19 @@ def main():
     # --- Sekcja Dodawania Produktu ---
     st.header("➕ Dodaj Produkt")
     
-    # Pole do wprowadzania nazwy produktu
-    nowy_produkt = st.text_input("Nazwa nowego produktu:", key="input_dodaj")
+    # Pole do wprowadzania nazwy produktu (key jest konieczny!)
+    # Wartość pola jest teraz zarządzana przez st.session_state.input_dodaj
+    st.text_input("Nazwa nowego produktu:", key="input_dodaj")
 
-    # Przycisk do dodania produktu
-    if st.button("Dodaj do Magazynu"):
-        if nowy_produkt:
-            # Dodanie produktu do listy w st.session_state
-            st.session_state.magazyn.append(nowy_produkt.strip())
-            st.success(f"Produkt **{nowy_produkt.strip()}** został dodany.")
-            # Wymuszenie odświeżenia pola tekstowego (opcjonalne, dla estetyki)
-            st.session_state.input_dodaj = "" 
-        else:
-            st.warning("Proszę podać nazwę produktu.")
-
+    # Przycisk do dodania produktu, wywołujący funkcję dodaj_produkt()
+    # Nie używamy już konstrukcji 'if st.button()', tylko 'on_click'
+    st.button(
+        "Dodaj do Magazynu", 
+        on_click=dodaj_produkt,
+        # Wymuszenie ponownego uruchomienia po akcji (opcjonalne, może być pomocne)
+        # type="primary" 
+    )
+    
     st.markdown("---")
 
     # --- Sekcja Wyświetlania Magazynu ---
@@ -46,11 +57,9 @@ def main():
     # --- Sekcja Usuwania Produktu ---
     st.header("🗑️ Usuń Produkt")
     
-    # Tworzenie listy opcji do usunięcia
     produkty_do_usuniecia = st.session_state.magazyn
     
     if produkty_do_usuniecia:
-        # Wybór produktu z listy rozwijanej
         wybrany_produkt = st.selectbox(
             "Wybierz produkt do usunięcia:",
             options=produkty_do_usuniecia,
@@ -60,10 +69,9 @@ def main():
         # Przycisk do usunięcia
         if st.button("Usuń z Magazynu"):
             try:
-                # Usunięcie produktu z listy
                 st.session_state.magazyn.remove(wybrany_produkt)
                 st.success(f"Produkt **{wybrany_produkt}** został usunięty.")
-                # Ponowne uruchomienie aplikacji (Streamlit) w celu odświeżenia stanu listy rozwijanej
+                # st.rerun() jest nadal potrzebne, aby odświeżyć 'st.selectbox' po usunięciu
                 st.rerun() 
             except ValueError:
                 st.error("Wystąpił błąd podczas usuwania produktu.")
