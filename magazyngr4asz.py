@@ -18,23 +18,26 @@ def main():
     if 'magazyn' not in st.session_state:
         st.session_state.magazyn = []
 
-    st.title("📦 Prosta Aplikacja Magazynowa")
+    # --- Układ nagłówka z obrazkiem Mikołaja ---
+    col1, col2 = st.columns([0.7, 0.3]) # Dzielimy szerokość na 70% dla tytułu i 30% dla obrazka
+
+    with col1:
+        st.title("📦 Prosta Aplikacja Magazynowa")
+    with col2:
+        # Pamiętaj, aby plik 'santa.png' (lub inny obrazek) znajdował się w tym samym katalogu
+        # co plik app.py, lub podaj pełną ścieżkę do obrazka.
+        st.image("santa.png", width=150) # Zmieniamy rozmiar, aby pasował do nagłówka
+
     st.markdown("---")
 
     # --- Sekcja Dodawania Produktu ---
     st.header("➕ Dodaj Produkt")
     
-    # Pole do wprowadzania nazwy produktu (key jest konieczny!)
-    # Wartość pola jest teraz zarządzana przez st.session_state.input_dodaj
     st.text_input("Nazwa nowego produktu:", key="input_dodaj")
 
-    # Przycisk do dodania produktu, wywołujący funkcję dodaj_produkt()
-    # Nie używamy już konstrukcji 'if st.button()', tylko 'on_click'
     st.button(
         "Dodaj do Magazynu", 
         on_click=dodaj_produkt,
-        # Wymuszenie ponownego uruchomienia po akcji (opcjonalne, może być pomocne)
-        # type="primary" 
     )
     
     st.markdown("---")
@@ -43,7 +46,6 @@ def main():
     st.header("📋 Aktualny Stan Magazynu")
     
     if st.session_state.magazyn:
-        # Wyświetlanie listy produktów
         st.dataframe(
             {'Produkt': st.session_state.magazyn}, 
             use_container_width=True,
@@ -66,12 +68,10 @@ def main():
             key="select_usun"
         )
 
-        # Przycisk do usunięcia
         if st.button("Usuń z Magazynu"):
             try:
                 st.session_state.magazyn.remove(wybrany_produkt)
                 st.success(f"Produkt **{wybrany_produkt}** został usunięty.")
-                # st.rerun() jest nadal potrzebne, aby odświeżyć 'st.selectbox' po usunięciu
                 st.rerun() 
             except ValueError:
                 st.error("Wystąpił błąd podczas usuwania produktu.")
